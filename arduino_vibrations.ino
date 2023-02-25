@@ -224,11 +224,11 @@ void loop(void) {
   float max_x = 0;
   float max_y = 0;
   float max_z = 0;
-  float x;
-  float y;
-  float z;
-  float acc;
-  float max_acc;
+  float x = 0;
+  float y = 0;
+  float z = 0;
+  float acc = 0;
+  float max_acc = 0;
   sensors_event_t event;
 
   
@@ -241,24 +241,22 @@ void loop(void) {
     z = abs(event.acceleration.z);
 
     max_x = max(x, max_x);
-    max_y = max(x, max_y);
-    max_z = max(x, max_z);
+    max_y = max(y, max_y);
+    max_z = max(z, max_z);
 
-    acc = sqrt(event.acceleration.x * event.acceleration.x +
+    acc = (sqrt(event.acceleration.x * event.acceleration.x +
                         event.acceleration.y * event.acceleration.y +
-                        event.acceleration.z * event.acceleration.z);
+                        event.acceleration.z * event.acceleration.z)) / 9.806;
 
     max_acc = max(acc, max_acc);
-    output_values(String(x), String(y), String(z), String(acc));
+    output_values(String(x), String(y), String(z), String(max_acc));
     delay(delay_ms);
   }
-  
+  ArduinoOTA.handle();
   Serial.println("----MAX VALUES--------");
   Serial.println("X: " + String(x) + "  Y: " + String(y) + "  Z: " + String(z));
   Serial.println("Acceleration: " + String(max_acc));
   Serial.println("----------------------");
 
   influx_send(String(max_x), String(max_y), String(max_z), String(max_acc));
-
-  delay(100);
 }
