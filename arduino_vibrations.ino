@@ -48,9 +48,6 @@ void setup(void) {
   accel.setMode(LSM303_MODE_HIGH_RESOLUTION); // LSM303_MODE_NORMA, LSM303_MODE_LOW_POWER, LSM303_MODE_HIGH_RESOLUTION
   sensors_event_t event;
   accel.getEvent(&event);
-  init_x = event.acceleration.x;
-  init_y = event.acceleration.y;
-  init_z = event.acceleration.z;
   Serial.println("Accelerometer OK");
 
 
@@ -132,7 +129,7 @@ void setup(void) {
 
 
 
-void output_values(String x, String y, String z, String max_x, String max_y, String max_z) {
+void output_values(String x, String y, String z, String acc) {
   /* Display the results (acceleration is measured in m/s^2) */
   // Serial.print("X: " + x + "  ");
   // Serial.print("Y: " + y + "  ");
@@ -162,17 +159,9 @@ void output_values(String x, String y, String z, String max_x, String max_y, Str
   tft.println();
 
   tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
-  tft.print("(" + String(seconds_to_gather) + "s):");
-
-  tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
-  tft.print(max_x + " ");
-
-  tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
-  tft.print(max_y + " ");
-
-  tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
-  tft.print(max_z);
-
+  tft.print("Accel ");
+  tft.print("(" + String(seconds_to_gather) + "s): ");
+  tft.print(acc);
   tft.println();
 }
 
@@ -189,11 +178,11 @@ void drawstatus(int status) {
   }
 }
 
-void influx_send(String x, String y, String z) {
+void influx_send(String x, String y, String z, String acc) {
   
   String measurement="accelerometer";
   String tags="location=grinder_discharge";
-  String payload = measurement + "," + tags + " x=" + x + ",y=" + y + ",z=" + z;
+  String payload = measurement + "," + tags + " x=" + x + ",y=" + y + ",z=" + z + ",acc=" + acc;
   Serial.println(payload);
   String url = "http://grafana.localdomain:8086/write?db=arduino";
 
@@ -238,6 +227,8 @@ void loop(void) {
   float x;
   float y;
   float z;
+  float acc;
+  float max_acc;
   sensors_event_t event;
 
   
@@ -245,23 +236,29 @@ void loop(void) {
   for (int i=0; i<loops; i++) {
   
     accel.getEvent(&event);
-    x = abs(event.acceleration.x - init_x);
-    y = abs(event.acceleration.y - init_y);
-    z = abs(event.acceleration.z - init_z);
+    x = abs(event.acceleration.x);
+    y = abs(event.acceleration.y);
+    z = abs(event.acceleration.z);
 
     max_x = max(x, max_x);
     max_y = max(x, max_y);
     max_z = max(x, max_z);
 
-    output_values(String(x), String(y), String(z), String(max_x), String(max_y), String(max_z));
+    acc = sqrt(event.acceleration.x * event.acceleration.x +
+                        event.acceleration.y * event.acceleration.y +
+                        event.acceleration.z * event.acceleration.z);
+
+    max_acc = max(acc, max_acc);
+    output_values(String(x), String(y), String(z), String(acc));
     delay(delay_ms);
   }
   
   Serial.println("----MAX VALUES--------");
   Serial.println("X: " + String(x) + "  Y: " + String(y) + "  Z: " + String(z));
+  Serial.println("Acceleration: " + String(max_acc));
   Serial.println("----------------------");
 
-  influx_send(String(max_x), String(max_y), String(max_z));
+  influx_send(String(max_x), String(max_y), String(max_z), String(max_acc));
 
   delay(100);
 }
