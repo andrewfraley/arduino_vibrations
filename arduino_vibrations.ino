@@ -136,26 +136,26 @@ void output_values(float x, float y, float z, float acc) {
   // Serial.print("Z: " + z + "  ");
   // Serial.println("m/s^2");
 
-  char output[25];
+  char output[50];
   tft.setCursor(0, 0);
   
   tft.setTextSize(3);
   tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
-  sprintf(output, "X: %.4f  ", x);
+  sprintf(output, "X: %.2f  ", x);
   tft.println(output);
 
   tft.setTextSize(1);
   tft.println();
   tft.setTextSize(3);
   tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
-  sprintf(output, "Y: %.4f  ", y);
+  sprintf(output, "Y: %.2f  ", y);
   tft.println(output);
 
   tft.setTextSize(1);
   tft.println();
   tft.setTextSize(3);
   tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
-  sprintf(output, "X: %.4f  ", z);
+  sprintf(output, "Z: %.2f  ", z);
   tft.println(output);
 
   // Max Values
@@ -163,9 +163,10 @@ void output_values(float x, float y, float z, float acc) {
   tft.println();
 
   tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
-  sprintf(output, "Accel (%ds): %.4f", acc);
+  sprintf(output, "Accel (%ds): %.4f",  seconds_to_gather, acc);
   tft.println(output);
   tft.println();
+
 }
 
 void drawstatus(int status) {
@@ -183,12 +184,11 @@ void drawstatus(int status) {
 
 void influx_send(float x, float y, float z, float acc) {
   
-  String measurement="accelerometer";
-  String tags="location=grinder_discharge";
   char payloadc[200];
-  sprintf(payloadc, "%s,%s x=%.4f,y=%.4f,z=%.4f,acc=%.4f", measurement, tags, x, y, z, acc);
+  sprintf(payloadc, "accelerometer,location=grinder_discharge x=%.4f,y=%.4f,z=%.4f,acc=%.4f", x, y, z, acc);
   String url = "http://grafana.localdomain:8086/write?db=arduino";
   String payload = String(payloadc);
+  Serial.println(payload);
 
   HTTPClient http;
   http.begin(url);
@@ -250,16 +250,15 @@ void loop(void) {
 
     acc = (sqrt(event.acceleration.x * event.acceleration.x +
                         event.acceleration.y * event.acceleration.y +
-                        event.acceleration.z * event.acceleration.z)) / 9.806;
+                        event.acceleration.z * event.acceleration.z));  // / 9.806;
 
     max_acc = max(acc, max_acc);
     output_values(x, y, z, max_acc);
     delay(delay_ms);
   }
   ArduinoOTA.handle();
-  Serial.println("----MAX VALUES--------");
-  Serial.println("X: " + String(x) + "  Y: " + String(y) + "  Z: " + String(z));
-  Serial.println("Acceleration: " + String(max_acc));
+  Serial.println("------MAX VALUES------");
+  Serial.printf("X: %.4f  Y: %.4f  Z: %.4f  ACC: %.4f\n", x, y, z, acc);
   Serial.println("----------------------");
 
   influx_send(max_x, max_y, max_z, max_acc);
