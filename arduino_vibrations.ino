@@ -20,7 +20,6 @@
 const char* ssid = MYSSID;
 const char* wifikey = WIFIKEY;
 
-int seconds_to_gather = 5;  // interval to collect max sensor data in seconds
 float init_x = 0;
 float init_y = 0;
 float init_z = 0;
@@ -120,6 +119,14 @@ void setup(void) {
   Serial.println("ArduinoOTA OK");
   tft.println("ArduinoOTA OK");
 
+  Serial.println("OTA wait on boot...");
+  tft.println("OTA wait on boot...");
+  unsigned long startTime = millis(); // Get the current time in milliseconds
+  while (millis() - startTime < 5000) { // Loop while the difference between the current time and the start time is less than 5000 milliseconds (5 seconds)
+    ArduinoOTA.handle();
+  }
+  
+
   Serial.println("System Ready!");
   tft.println("System ready!");
   delay(1000);
@@ -163,7 +170,7 @@ void output_values(float x, float y, float z, float acc) {
   tft.println();
 
   tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
-  sprintf(output, "Accel (%ds): %.4f",  seconds_to_gather, acc);
+  sprintf(output, "Accel (5s): %.4f", acc);
   tft.println(output);
   tft.println();
 
@@ -223,8 +230,7 @@ void influx_send(float x, float y, float z, float acc) {
 
 void loop(void) {
   ArduinoOTA.handle();
-  int delay_ms = 25;
-  int loops = seconds_to_gather * 1000 / delay_ms;
+  int loop_time = 5000;  // ms to loop for
   float max_x = 0;
   float max_y = 0;
   float max_z = 0;
@@ -237,8 +243,9 @@ void loop(void) {
 
   
   
-  for (int i=0; i<loops; i++) {
-  
+  unsigned long startTime = millis(); // Get the current time in milliseconds
+  while (millis() - startTime < loop_time) { // Loop while the difference between the current time and the start time is less than 5000 milliseconds (5 seconds)
+
     accel.getEvent(&event);
     x = abs(event.acceleration.x);
     y = abs(event.acceleration.y);
@@ -254,7 +261,6 @@ void loop(void) {
 
     max_acc = max(acc, max_acc);
     output_values(x, y, z, max_acc);
-    delay(delay_ms);
   }
   ArduinoOTA.handle();
   Serial.println("------MAX VALUES------");
