@@ -250,7 +250,7 @@ void loop(void) {
 
     acc = (sqrt(event.acceleration.x * event.acceleration.x +
                         event.acceleration.y * event.acceleration.y +
-                        event.acceleration.z * event.acceleration.z));  // / 9.806;
+                        event.acceleration.z * event.acceleration.z)) / 9.806;
 
     max_acc = max(acc, max_acc);
     output_values(x, y, z, max_acc);
