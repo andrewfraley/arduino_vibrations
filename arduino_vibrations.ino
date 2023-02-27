@@ -240,6 +240,7 @@ void loop(void) {
   float acc = 0;
   float max_acc = 0;
   sensors_event_t event;
+  int loops = 0;
 
   
   
@@ -260,12 +261,15 @@ void loop(void) {
                         event.acceleration.z * event.acceleration.z)) / 9.806;
 
     max_acc = max(acc, max_acc);
-    output_values(x, y, z, max_acc);
+    if (loops % 10 == 0) output_values(x, y, z, max_acc);
+    loops++;
   }
   ArduinoOTA.handle();
+  output_values(max_x, y, z, max_acc);
   Serial.println("------MAX VALUES------");
   Serial.printf("X: %.4f  Y: %.4f  Z: %.4f  ACC: %.4f\n", x, y, z, acc);
   Serial.println("----------------------");
+  Serial.println(loops);
 
   influx_send(max_x, max_y, max_z, max_acc);
 }
