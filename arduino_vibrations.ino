@@ -43,8 +43,8 @@ void setup(void) {
     /* There was a problem detecting the ADXL345 ... check your connections */
     Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
   }
-  accel.setRange(LSM303_RANGE_2G);  // 2G, 4G, 8G, 16G
-  accel.setMode(LSM303_MODE_HIGH_RESOLUTION); // LSM303_MODE_NORMA, LSM303_MODE_LOW_POWER, LSM303_MODE_HIGH_RESOLUTION
+  accel.setRange(LSM303_RANGE_4G);  // 2G, 4G, 8G, 16G
+  accel.setMode(LSM303_MODE_NORMAL); // LSM303_MODE_NORMA, LSM303_MODE_LOW_POWER, LSM303_MODE_HIGH_RESOLUTION
   sensors_event_t event;
   accel.getEvent(&event);
   Serial.println("Accelerometer OK");
@@ -137,12 +137,6 @@ void setup(void) {
 
 
 void output_values(float x, float y, float z, float acc) {
-  /* Display the results (acceleration is measured in m/s^2) */
-  // Serial.print("X: " + x + "  ");
-  // Serial.print("Y: " + y + "  ");
-  // Serial.print("Z: " + z + "  ");
-  // Serial.println("m/s^2");
-
   char output[50];
   tft.setCursor(0, 0);
   
