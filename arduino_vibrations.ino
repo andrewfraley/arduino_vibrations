@@ -16,7 +16,9 @@
 #include <HTTPClient.h>
 #include <ArduinoOTA.h>
 
-
+// Creds stored in myconfig.hpp
+// #define MYSSID "some_ssid";
+// #define WIFIKEY "some_key";
 const char* ssid = MYSSID;
 const char* wifikey = WIFIKEY;
 
@@ -81,9 +83,9 @@ void setup(void) {
     delay(5000);
     ESP.restart();
   }
-  
+
   tft.println("Wifi initialized!");
-  
+
 
   // OTA
   Serial.println("Initializing ArduinoOTA...");
@@ -125,13 +127,13 @@ void setup(void) {
   while (millis() - startTime < 5000) { // Loop while the difference between the current time and the start time is less than 5000 milliseconds (5 seconds)
     ArduinoOTA.handle();
   }
-  
+
 
   Serial.println("System Ready!");
   tft.println("System ready!");
   delay(1000);
   tft.fillScreen(ST77XX_BLACK);
-  
+
 }
 
 
@@ -139,7 +141,7 @@ void setup(void) {
 void output_values(float x, float y, float z, float acc) {
   char output[50];
   tft.setCursor(0, 0);
-  
+
   tft.setTextSize(3);
   tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
   sprintf(output, "X: %.2f  ", x);
@@ -184,7 +186,7 @@ void drawstatus(int status) {
 }
 
 void influx_send(float x, float y, float z, float acc) {
-  
+
   char payloadc[200];
   sprintf(payloadc, "accelerometer,location=grinder_discharge x=%.4f,y=%.4f,z=%.4f,acc=%.4f", x, y, z, acc);
   String url = "http://grafana.localdomain:8086/write?db=arduino";
@@ -236,8 +238,8 @@ void loop(void) {
   sensors_event_t event;
   int loops = 0;
 
-  
-  
+
+
   unsigned long startTime = millis(); // Get the current time in milliseconds
   while (millis() - startTime < loop_time) { // Loop while the difference between the current time and the start time is less than 5000 milliseconds (5 seconds)
 
