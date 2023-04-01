@@ -1,3 +1,7 @@
+// Measures vibrations with an Adafruit ESP32-S2 TFT Feather and Adafruit LSM303AGR Accelerometer
+// Andy Fraley
+// https://github.com/andrewfraley/arduino_vibrations
+
 // ACCELEROMETER
 #include <Adafruit_LSM303_Accel.h>
 #include <Adafruit_Sensor.h>
@@ -241,7 +245,7 @@ void loop(void) {
 
 
   unsigned long startTime = millis(); // Get the current time in milliseconds
-  while (millis() - startTime < loop_time) { // Loop while the difference between the current time and the start time is less than 5000 milliseconds (5 seconds)
+  while (millis() - startTime < loop_time) { // Loop while the difference between the current time and the start time is less than 5000ms
 
     accel.getEvent(&event);
     x = abs(event.acceleration.x);
